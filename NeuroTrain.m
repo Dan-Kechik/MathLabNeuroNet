@@ -6,6 +6,8 @@
 %
 %   engineInputs - input data.
 %   engineTargets - target data.
+%
+%Подбираем наилучшее кол-во нейронов. Для оценки используем регрессию.
 
 x = engineInputs;
 t = engineTargets;
@@ -20,11 +22,27 @@ trainFcn = 'trainlm';  % Levenberg-Marquardt backpropagation.
 % Create a Fitting Network
 hiddenLayerSize = 10;
 net = fitnet(hiddenLayerSize,trainFcn);
+% Two (or more) layer fitting networks can fit any finite input-output
+%    relationship arbitrarily well given enough hidden neurons.
+%    fitnet(hiddenSizes,trainFcn) takes a row vector of N hidden layer
+%    sizes, and a backpropagation training function, and returns
+%    a feed-forward neural network with N+1 layers.
+%    Input, output and output layers sizes are set to 0.  These sizes will
+%    automatically be configured to match particular data by train. Or the
+%    user can manually configure inputs and outputs with configure.
+
+%2-х- или более слойные сети могут быть подогнаны под любое конечное
+%отношение вх/вых, произвольно данное достаточному кол-ву нейронов.
+%fitnet(hiddenSizes,trainFcn) приним. строку-вектор N размеров скрытых
+%слоёв, тренировочную ф-цию обратно распространяемой ошибки и возвр. сеть с прямой передачей с N+1 скрытыми слоями.
+%Размеры вх, вых, вых слоя уст. в 0. Их размеры подберутся ф-цией трени автоматически.
 
 % Choose Input and Output Pre/Post-Processing Functions
 % For a list of all processing functions type: help nnprocess
 net.input.processFcns = {'removeconstantrows','mapminmax'};
 net.output.processFcns = {'removeconstantrows','mapminmax'};
+%'removeconstantrows' - удалить строки м-цы, содер-щие значение
+%'mapminmax' - привести минимальное и максимальное значение к [-1;1]
 
 % Setup Division of Data for Training, Validation, Testing
 % For a list of all data division functions type: help nndivide
@@ -45,13 +63,18 @@ net.plotFcns = {'plotperform','plottrainstate','ploterrhist', ...
 
 % Train the Network
 [net,tr] = train(net,x,t);
+%берём сеть net, вх. данн. x, цель t и возвр. сеть net и тренировочную
+%запись tr. Могут передаваться нач. вх. сост. и нач. слои (Xi, Ai), веса ошибок EW.
 
 % Test the Network
 y = net(x);
 e = gsubtract(t,y);
+%Вычисление ошибки. gsubtract - поэлементное вычитание.
 performance = perform(net,t,y)
+%Вычисление производительности сети
 
 % Recalculate Training, Validation and Test Performance
+%tr - структура с параметрами сети, обучения и показателями обучения, как градиент ф-ции ошибки и др.
 trainTargets = t .* tr.trainMask{1};
 valTargets = t .* tr.valMask{1};
 testTargets = t .* tr.testMask{1};
@@ -92,3 +115,10 @@ if (false)
     % Simulink Coder tools.
     gensim(net);
 end
+
+%Создаём ф-цию сети.
+genFunction(net,'NNFun','MatrixOnly','yes');
+y = NNFun(x);
+%Строим регрессию - основной показатель качества
+[R,M,B] = regression(t,y)
+plotregression(t,y)
