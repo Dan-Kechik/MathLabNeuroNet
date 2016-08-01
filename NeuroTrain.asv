@@ -127,7 +127,6 @@ exit=false;
 inc=-1; %Переменная, с пом. к-рой изменяем число нейронов: пробуем уменьшить, затем увеличить их число.
 R_nes=1; %Необходимый показатель: По его достижении цикл завершается. Если 1, то ищем максимум.
 i=1;
-N0=hiddenLayerSize;
 while (~exit)
    hiddenLayerSize=hiddenLayerSize+inc;
    i=i+1;
@@ -139,14 +138,7 @@ while (~exit)
    if R_c>=R_nes exit=true; end %Если достигли нужного значения - выходим.
    if R_c<R(i-1)
        if inc==1 exit=true; end %Если inc=-1, то мы пробовали уменьшать, если inc=1, значит нашли максимальное кол-во нейр.
-       %Если пробовали уменьшать, попробуем увеличивать. Если увеличивали и
-       %достигли максимума - выходим.
        inc=1;
-       hiddenLayerSize=N0; %Устанавливаем исходное кол-во нейр.
    end
 end
-[mv,mi]=max(R); %Ищем реализацию с лучшим показателем
-hiddenLayerSize=R(mi); %Уст. число нейронов, mi - индекс макс. показателя.
-net = fitnet(hiddenLayerSize,trainFcn);
-[net,tr] = train(net,x,t);
-plotregression(t,y)
+[mv,mi]=max(R);
