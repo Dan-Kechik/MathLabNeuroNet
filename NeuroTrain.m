@@ -9,8 +9,11 @@
 %
 %Подбираем наилучшее кол-во нейронов. Для оценки используем регрессию.
 
-x = engineInputs;
-t = engineTargets;
+path='D:\Programs\Program Files\Learning_sets\Janry_muzyki\genres';
+[Inputs, Targets]=getIT(path);
+
+x = Inputs;
+t = Targets;
 
 % Choose a Training Function
 % For a list of all training functions type: help nntrain

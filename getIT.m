@@ -1,0 +1,25 @@
+function [Inputs, Targets]=getIT(path)
+D=dir(path);
+%Заносим имена классов в массив. Классы лежат в отдельных папках.
+classes={};
+for i=1:length(D)
+   if (D(i).isdir)&&(D(i).name(1)~='.') %Если папка и не корневая
+      classes=[classes D(i).name];
+   end
+end
+
+Inputs=[];
+Targets=[];
+for j=1:length(classes)
+    ph=[path '\' cell2mat(classes(j))];
+    Files=dir(ph);
+    %Inputs=[Inputs zeros(length(Files),1)];
+    for i=3:length(Files)
+        [Y,Fs]=audioread([ph '\' Files(i).name]);
+        y=fft(Y);
+        Inputs=[Inputs; y(1:330000)']; %Добавляем данные файла в массив
+    end
+    Targets=[Targets; j*ones(length(Files)-2,1)]; %Заносим номера классов, соответствующие файлам
+end
+
+end
